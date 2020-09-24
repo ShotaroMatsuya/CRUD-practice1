@@ -1,0 +1,117 @@
+<body>
+    <h1>Learn JSON</h1>
+    <div id="output">
+        <ul id="taskList"></ul>
+    </div>
+    <form id="myForm"> Task :
+        <input type="text" name="task" placeholder="add task">
+        <input type="submit" value="Add new Task"> </form>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+    
+    class MyCRUD{
+        //init 
+
+        constructor(){
+            this.taskList = $('#taskList');
+            this.submit = $('#myForm');
+            var data ="";
+
+            // init data
+            if (sessionStorage['tasklist'] != null) {
+                data = sessionStorage['tasklist'];
+            }
+            else {
+                data = '[{"info":"Cut the Grass","status":false},{"info":"Clean Room","status":true},{"info":"Go to Gym","status":false},{"info":"Make Dinner","status":false}]';
+            }
+            this.dataJSON = JSON.parse(data);
+            
+   
+            // READ
+            this.readElement(this.dataJSON);
+            // 
+            this.events();
+
+        }
+        //event register
+        events(){
+            //delete event
+            this.taskList.on('click','#delete' ,this.deleteElement.bind(this));
+            //upadte event
+            this.taskList.on('change','input[type=checkbox]',this.updateElement.bind(this));
+            //create
+            this.submit.on('submit',this.createElement.bind(this));
+        }
+
+
+
+
+        //methods
+        readElement(JSON){
+            //read JSON
+            var html="";
+            for (var index in JSON){
+                this.addElement(JSON[index],index);
+            }
+        }
+
+
+        addElement(data,index){
+            //add DOM
+            var html = `<li>${data.info}<input type="checkbox" ${data.status ? 'checked':''} value="${index}"><button id="delete">DELETE</button></li>`;
+            this.taskList.append(html);
+        }
+
+
+        createElement(e){
+            e.preventDefault();
+            //get value
+            var tempValue = $('input[name="task"]').val();
+            var newData= {info:tempValue,status:false};
+            //add DOM
+            this.addElement(newData,this.dataJSON.length);
+
+
+            //modefy JSON
+            this.dataJSON.push(newData);
+            console.log(this.dataJSON);
+            this.save(this.dataJSON);
+
+        }
+
+        updateElement(e){
+            // get value
+            var key = e.target.value;
+            // modify JSON
+            this.dataJSON[key].status = event.target.checked;
+            console.log(this.dataJSON);
+            this.save(this.dataJSON);
+        }
+
+
+        
+        deleteElement(e){
+            //delete DOM
+            var index = $(e.target).prev().attr("value");
+            this.taskList.html('');
+
+            //modify JSON
+            this.dataJSON.splice(index,1);
+            console.log(this.dataJSON);
+
+            //read
+            this.readElement(this.dataJSON);
+            //save
+            this.save(this.dataJSON);
+        }
+        save(data){
+            sessionStorage['tasklist'] = JSON.stringify(data);
+        }
+        
+
+
+    }
+    const mycrud = new MyCRUD();
+       
+    </script>
+</body>
